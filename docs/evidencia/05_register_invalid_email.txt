@@ -1,0 +1,4 @@
+HTTP 400
+Content-Type: application/json; charset=utf-8
+
+{"status": "error", "message": ["email inválido: An email address must have an @-sign."]}

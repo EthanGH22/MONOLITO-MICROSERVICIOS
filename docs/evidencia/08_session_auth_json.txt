@@ -1,0 +1,4 @@
+HTTP 200
+Content-Type: application/json; charset=utf-8
+
+{"status": "ok", "authenticated": true, "user": {"id_usuario": 1, "nombre": "Ana", "apellido_paterno": "Lopez", "apellido_materno": "Ruiz", "email": "ana.d88f9f9d@example.com", "es_administrador": false}}

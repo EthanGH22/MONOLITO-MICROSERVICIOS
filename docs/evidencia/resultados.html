@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Evidencia — microservicio login</title>
+  <style>
+    body { font-family: Segoe UI, sans-serif; margin: 24px; background: #f4f1ea; color: #1f1b16; }
+    h1 { margin-bottom: 8px; }
+    .card { background: #fff; border: 1px solid #d7cfc4; border-radius: 10px; padding: 16px; margin: 16px 0; }
+    pre { background: #1e1e1e; color: #dcdcdc; padding: 12px; overflow: auto; border-radius: 8px; font-size: 13px; }
+    .ok { color: #0b7a3b; font-weight: 700; }
+    .err { color: #a1260d; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>Validación de endpoints — puerto 5000</h1>
+  <p>PostgreSQL <code>library</code> / usuario <code>library_user</code>. Formato por defecto: XML.</p>
+
+  <div class="card">
+    <h2>GET /health <span class="ok">200 XML</span></h2>
+    <pre>HTTP 200
+Content-Type: application/xml
+
+&lt;response&gt;
+  &lt;status&gt;ok&lt;/status&gt;
+  &lt;service&gt;login&lt;/service&gt;
+  &lt;postgres&gt;ok&lt;/postgres&gt;
+&lt;/response&gt;</pre>
+  </div>
+
+  <div class="card">
+    <h2>GET /health?format=json <span class="ok">200 JSON</span></h2>
+    <pre>{"status": "ok", "service": "login", "postgres": "ok"}</pre>
+  </div>
+
+  <div class="card">
+    <h2>POST /register (XML) <span class="ok">201</span></h2>
+    <pre>Usuario registrado — email único, sin password en la respuesta.
+id_usuario=1  ana.d88f9f9d@example.com</pre>
+  </div>
+
+  <div class="card">
+    <h2>POST /register?format=json (correo duplicado) <span class="err">409</span></h2>
+    <pre>{"status": "error", "message": "El correo ya está registrado"}</pre>
+  </div>
+
+  <div class="card">
+    <h2>POST /register?format=json (email inválido) <span class="err">400</span></h2>
+    <pre>{"status": "error", "message": ["email inválido: An email address must have an @-sign."]}</pre>
+  </div>
+
+  <div class="card">
+    <h2>GET /session (anónimo) <span class="ok">200 XML</span></h2>
+    <pre>&lt;authenticated&gt;false&lt;/authenticated&gt;</pre>
+  </div>
+
+  <div class="card">
+    <h2>POST /login <span class="ok">200 XML + cookie de sesión</span></h2>
+    <pre>Sesión iniciada para Ana Lopez — password_hash PBKDF2 en PostgreSQL</pre>
+  </div>
+
+  <div class="card">
+    <h2>GET /session?format=json <span class="ok">200 autenticado</span></h2>
+    <pre>{"status": "ok", "authenticated": true, "user": {"id_usuario": 1, "nombre": "Ana", ...}}</pre>
+  </div>
+
+  <div class="card">
+    <h2>POST /logout <span class="ok">200 XML</span></h2>
+    <pre>&lt;message&gt;Sesión cerrada&lt;/message&gt;</pre>
+  </div>
+
+  <div class="card">
+    <h2>GET /session después de logout <span class="ok">200</span></h2>
+    <pre>{"status": "ok", "authenticated": false, "user": null}</pre>
+  </div>
+
+  <div class="card">
+    <h2>POST /login?format=json (password incorrecto) <span class="err">401</span></h2>
+    <pre>{"status": "error", "message": "Credenciales inválidas"}</pre>
+  </div>
+</body>
+</html>

@@ -1,0 +1,4 @@
+HTTP 409
+Content-Type: application/json; charset=utf-8
+
+{"status": "error", "message": "El correo ya está registrado"}

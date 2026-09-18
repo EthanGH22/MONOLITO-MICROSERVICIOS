@@ -1,0 +1,16 @@
+HTTP 201
+Content-Type: application/xml; charset=utf-8
+
+<?xml version="1.0" encoding="utf-8"?>
+<response>
+  <status>ok</status>
+  <message>Usuario registrado</message>
+  <user>
+    <id_usuario>1</id_usuario>
+    <nombre>Ana</nombre>
+    <apellido_paterno>Lopez</apellido_paterno>
+    <apellido_materno>Ruiz</apellido_materno>
+    <email>ana.d88f9f9d@example.com</email>
+    <es_administrador>false</es_administrador>
+  </user>
+</response>
