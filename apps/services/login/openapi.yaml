@@ -1,0 +1,171 @@
+openapi: 3.0.3
+info:
+  title: Login microservice — librería en línea
+  version: 1.0.0
+  description: |
+    Autenticación y alta de usuarios sobre PostgreSQL (`library`).
+
+    **Formato:** todos los endpoints aceptan `?format=xml` o `?format=json`.
+    Si se omite `format`, la respuesta es **XML**.
+
+    La contraseña se recibe solo en el cuerpo de `/register` y `/login`.
+    En PostgreSQL se guarda únicamente `usuario.password_hash` (PBKDF2).
+    No existe tabla de passwords ni duplicado del secreto.
+servers:
+  - url: http://localhost:5000
+tags:
+  - name: salud
+  - name: autenticacion
+paths:
+  /health:
+    get:
+      tags: [salud]
+      summary: Estado del microservicio y de PostgreSQL
+      parameters:
+        - $ref: "#/components/parameters/Format"
+      responses:
+        "200":
+          description: Servicio y base de datos disponibles
+          content:
+            application/xml:
+              example: |
+                <?xml version="1.0" encoding="UTF-8"?>
+                <response>
+                  <status>ok</status>
+                  <service>login</service>
+                  <postgres>ok</postgres>
+                </response>
+            application/json:
+              example:
+                status: ok
+                service: login
+                postgres: ok
+        "503":
+          description: PostgreSQL no responde
+  /register:
+    post:
+      tags: [autenticacion]
+      summary: Registrar un usuario nuevo
+      parameters:
+        - $ref: "#/components/parameters/Format"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Register"
+            example:
+              nombre: Ana
+              apellido_paterno: López
+              apellido_materno: Ruiz
+              email: ana.lopez@example.com
+              password: "secreto123"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/Register"
+            example: |
+              <register>
+                <nombre>Ana</nombre>
+                <apellido_paterno>López</apellido_paterno>
+                <apellido_materno>Ruiz</apellido_materno>
+                <email>ana.lopez@example.com</email>
+                <password>secreto123</password>
+              </register>
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Register"
+      responses:
+        "201":
+          description: Usuario creado (sin password ni hash en la respuesta)
+        "400":
+          description: Validación fallida (email inválido o campos faltantes)
+        "409":
+          description: El correo ya está registrado
+  /login:
+    post:
+      tags: [autenticacion]
+      summary: Autenticar e iniciar sesión Flask
+      parameters:
+        - $ref: "#/components/parameters/Format"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Login"
+            example:
+              email: ana.lopez@example.com
+              password: "secreto123"
+          application/xml:
+            example: |
+              <login>
+                <email>ana.lopez@example.com</email>
+                <password>secreto123</password>
+              </login>
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Login"
+      responses:
+        "200":
+          description: Sesión creada (cookie HttpOnly)
+        "400":
+          description: Cuerpo incompleto
+        "401":
+          description: Credenciales inválidas
+  /logout:
+    post:
+      tags: [autenticacion]
+      summary: Cerrar la sesión actual
+      parameters:
+        - $ref: "#/components/parameters/Format"
+      responses:
+        "200":
+          description: Sesión eliminada
+  /session:
+    get:
+      tags: [autenticacion]
+      summary: Consultar si hay una sesión autenticada
+      parameters:
+        - $ref: "#/components/parameters/Format"
+      responses:
+        "200":
+          description: authenticated true o false
+components:
+  parameters:
+    Format:
+      name: format
+      in: query
+      required: false
+      description: xml (predeterminado) o json
+      schema:
+        type: string
+        enum: [xml, json]
+        default: xml
+  schemas:
+    Register:
+      type: object
+      required: [nombre, apellido_paterno, apellido_materno, email, password]
+      properties:
+        nombre:
+          type: string
+        apellido_paterno:
+          type: string
+        apellido_materno:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+    Login:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
